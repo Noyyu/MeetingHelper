@@ -3,9 +3,11 @@
     public interface IAiService
     {
         //Responds with a pretty text based on the prompt. 
-        Task<string> GenerateTextAsync(string prompt);
+        Task<string> GetSummeryFromText(string prompt);
 
         //Responds with a summerized version of the audio file.
-        Task<string> SummarizeAudioAsync(IFormFile audioFile);
+        Task<string> GetSummeryFromAudio(IFormFile audioFile);
+
+        Task<string> CreateMeetingAgenda(string topic, string duration, string attendees);
     }
 }
