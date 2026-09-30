@@ -67,6 +67,22 @@ namespace MeetingHelper.Services
             return await GetResponse(response);
         }
 
+        public async Task<string> CreateInvitationMessage(string MeetingTitle, string DateAndTime, string Location, string Purpose)
+        {
+            var cleanMeetingTitle = MeetingTitle.Replace("\r\n", " ").Replace("\n", " ");
+            var cleanDateAndTime = DateAndTime.Replace("\r\n", " ").Replace("\n", " ");
+            var cleanLocation = Location.Replace("\r\n", " ").Replace("\n", " ");
+            var cleanPurpose = Purpose.Replace("\r\n", " ").Replace("\n", " ");
+
+            var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/{_geminiModel}:generateContent?key={_apiKey}";
+            var requestBody = CreateRequestBody(
+                new { text = $"Create and only respond with a meeting invitation message based on the following information: Meeting Title: {cleanMeetingTitle}, Date and Time: {cleanDateAndTime}, Location: {cleanLocation}, Purpose: {cleanPurpose}" }
+            );
+
+            using var response = await _httpClient.PostAsJsonAsync(endpoint, requestBody);
+            return await GetResponse(response);
+        }
+
         private async Task<string> GetResponse(HttpResponseMessage response)
         {
             if (!response.IsSuccessStatusCode)

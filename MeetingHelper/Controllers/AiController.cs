@@ -16,7 +16,7 @@ namespace MeetingHelper.Controllers
             _aiService = aiService;
         }
 
-        [HttpPost("text")]
+        [HttpPost("summarizeText")]
         public async Task<IActionResult> GetSummeryFromText([FromBody] TextPromptRequestDTO prompt)
         {
             try
@@ -31,10 +31,10 @@ namespace MeetingHelper.Controllers
             }
         }
 
-        [HttpPost("audio")]
-        public async Task<IActionResult> GetSummeryFromAudio( IFormFile file)
+        [HttpPost("summarizeAudio")]
+        public async Task<IActionResult> GetSummeryFromAudio(IFormFile file)
         {
-            var allowedAudioTypes = new[] { "audio/mpeg", "audio/wav", "audio/mp4", "audio/flac", "audio/webm","audio/aac" };
+            var allowedAudioTypes = new[] { "audio/mpeg", "audio/wav", "audio/mp4", "audio/flac", "audio/webm", "audio/aac" };
 
             if (!allowedAudioTypes.Contains(file.ContentType))
             {
@@ -61,6 +61,22 @@ namespace MeetingHelper.Controllers
                 var result = await _aiService.CreateMeetingAgenda(prompt.Topic, prompt.Duration, prompt.Attendees);
                 var responsePayload = new AiResponseDTO(result);
                 return Ok(responsePayload);
+            }
+            catch (Exception ex)
+            {
+                return (StatusCode(500, ex.Message));
+            }
+        }
+
+        [HttpPost("invitation")]
+        public async Task<IActionResult> GetInvitationFromPrompt(InvitationRequestDTO prompt)
+        {
+            try
+            {
+                var result = await _aiService.CreateInvitationMessage(prompt.MeetingTitle, prompt.DateAndTime, prompt.Location, prompt.Purpose);
+                var responsePayload = new AiResponseDTO(result);
+                return Ok(responsePayload);
+
             }
             catch (Exception ex)
             {
