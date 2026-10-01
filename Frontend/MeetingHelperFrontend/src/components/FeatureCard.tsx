@@ -11,14 +11,20 @@ export default function FeatureCard({title, children}: FeatureCardProps) {
     return (
         <div>
             <button 
+            className="function-button"
             type="button"
-            onClick={() => setIsOpen(!isOpen)}>
+            onClick={() => setIsOpen(!isOpen)}
+            style={{
+            backgroundColor: isOpen ? "#c084fc" : "#c084fc59",
+            color: isOpen ? "black" : "white",
+            fontWeight: isOpen ? "bold" : "normal",}}>
             <span>{title}</span>
             <span>{isOpen ? '▲' : '▼' }</span>
             </button>
 
             {isOpen && (
-                <div> 
+                <div className = "child-container"> 
+                    
                     {children}
                 </div>
             )}

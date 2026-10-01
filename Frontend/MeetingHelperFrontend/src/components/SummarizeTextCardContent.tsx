@@ -1,11 +1,13 @@
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { getTextSummary } from '../services/AiService';
+import { setResponse } from '../store/aiResponseSlice';
 
 export default function SummorizeTextPage(){
     const [notes, setNotes] = useState("");
-    const [summery, setSummery] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+    const dispatch = useDispatch();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -17,7 +19,7 @@ export default function SummorizeTextPage(){
 
         try{
             const result = await getTextSummary(notes);
-            setSummery(result);
+            dispatch(setResponse(result))
             
         } catch (error) {
             setError("Could not reach the server.")
@@ -41,12 +43,7 @@ export default function SummorizeTextPage(){
 
         {error && <p style={{ color : "red"}}> {error} </p>}
 
-        {summery && (
-            <div>
-                <h3> Summary </h3>
-                <p>{summery}</p>
-            </div>
-        )}
+        
     </>
     )
 }

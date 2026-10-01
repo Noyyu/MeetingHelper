@@ -31,7 +31,10 @@ namespace MeetingHelper.Controllers
             }
         }
 
+
         [HttpPost("summarizeAudio")]
+        [RequestSizeLimit(200_000_000)] // Tillåter ~200 MB i Kestrel
+        [RequestFormLimits(MultipartBodyLengthLimit = 200_000_000)] // Tillåter ~200 MB i formuläret
         public async Task<IActionResult> GetSummeryFromAudio(IFormFile file)
         {
             var allowedAudioTypes = new[] { "audio/mpeg", "audio/wav", "audio/mp4", "audio/flac", "audio/webm", "audio/aac" };

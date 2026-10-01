@@ -110,10 +110,15 @@ code {
   background: var(--code-bg);
 }
 
-.page-button{
+.function-button{
   color:#e5e4e7;
-  font-size:x-large;
-  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 1.1rem;
+  text-align: left;
+  padding: 1rem 1.25rem;
   border-radius: 0.4rem;
   border-style: solid;
   border-width: 0.1rem;
@@ -121,9 +126,95 @@ code {
   background-color:#c084fc59
 }
 
-.page-button-container{
-  padding: 2rem;
-  justify-self: center;
-  display:grid;
-  gap: 3rem;
+.feature-list {
+  display: grid;
+  gap: 0.75rem;
+  width: min(100% - 2rem, 48rem);
+  margin: 2rem auto;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.child-container{
+  background-color: #c084fc59;
+  margin-top: 0.5rem;
+  padding: 1.25rem;
+  border: 1px solid #c084fc78;
+  border-radius: 0.4rem;
+}
+
+.child-container form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.child-container input,
+.child-container textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  font: inherit;
+
+}
+
+.ai-response {
+  width: min(100% - 2rem, 48rem);
+  margin: 2rem auto;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.ai-response h1,
+.ai-response h2,
+.ai-response h3 {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1.25rem;
+  letter-spacing: 0;
+}
+
+.ai-response p,
+.ai-response ul,
+.ai-response ol,
+.ai-response blockquote {
+  margin: 0.6rem 0;
+}
+
+.ai-response ul,
+.ai-response ol {
+  padding-left: 1.5rem;
+}
+
+.ai-response li + li {
+  margin-top: 0.3rem;
+}
+
+.ai-response pre {
+  overflow-x: auto;
+  padding: 0.9rem;
+  border-radius: 0.25rem;
+  background: var(--code-bg);
+}
+
+.ai-response pre code {
+  display: block;
+  padding: 0;
+  background: transparent;
+  white-space: pre;
+}
+
+.ai-response table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.ai-response th,
+.ai-response td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  text-align: left;
 }

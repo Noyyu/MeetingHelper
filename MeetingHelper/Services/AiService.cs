@@ -35,19 +35,72 @@ namespace MeetingHelper.Services
 
         public async Task<string> GetSummeryFromAudio(IFormFile audioFile)
         {
-            var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/{_geminiModel}:generateContent?key={_apiKey}";
+            string? fileName = null;
+            _httpClient.Timeout = TimeSpan.FromMinutes(10);
 
-            using var memoryStream = new MemoryStream();
-            await audioFile.CopyToAsync(memoryStream); // Copy the audio file to a memory stream.
-            var base64Data = Convert.ToBase64String(memoryStream.ToArray()); // Converts the ausdio file to a format that can be written in JSON so it can be sent to the API! :D !!!!! >:(
+            try
+            {
+                var initUrl = $"https://generativelanguage.googleapis.com/upload/v1beta/files?key={_apiKey}";
+                using var initRequest = new HttpRequestMessage(HttpMethod.Post, initUrl);
+                initRequest.Headers.Add("X-Goog-Upload-Protocol", "resumable");
+                initRequest.Headers.Add("X-Goog-Upload-Command", "start");
+                initRequest.Headers.Add("X-Goog-Upload-Header-Content-Length", audioFile.Length.ToString());
+                initRequest.Headers.Add("X-Goog-Upload-Header-Content-Type", audioFile.ContentType);
+                initRequest.Content = JsonContent.Create(new { file = new { display_name = audioFile.FileName } });
 
-            var requestBody = CreateRequestBody(
-            new { text = "Summarize the following audio file from a meeting." },
-            new { audio = base64Data }
-            );
+                using var initResponse = await _httpClient.SendAsync(initRequest);
+                initResponse.EnsureSuccessStatusCode();
 
-            using var response = await _httpClient.PostAsJsonAsync(endpoint, requestBody);
-            return await GetResponse(response);
+                var uploadUrl = initResponse.Headers.GetValues("x-goog-upload-url").First();
+
+                using var fileStream = audioFile.OpenReadStream();
+                using var uploadRequest = new HttpRequestMessage(HttpMethod.Post, uploadUrl);
+                uploadRequest.Headers.Add("X-Goog-Upload-Offset", "0");
+                uploadRequest.Headers.Add("X-Goog-Upload-Command", "upload, finalize");
+                uploadRequest.Content = new StreamContent(fileStream);
+
+                using var uploadResponse = await _httpClient.SendAsync(uploadRequest);
+                uploadResponse.EnsureSuccessStatusCode();
+
+                using var uploadResult = await JsonDocument.ParseAsync(await uploadResponse.Content.ReadAsStreamAsync());
+                var fileElement = uploadResult.RootElement.GetProperty("file");
+                var fileUri = fileElement.GetProperty("uri").GetString();
+                fileName = fileElement.GetProperty("name").GetString();
+
+                var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/{_geminiModel}:generateContent?key={_apiKey}";
+
+                var requestBody = CreateRequestBody(
+                new { text = "This meeting might be in english or swedish. Please only answer with a summarization of the meeting and a list of important bulletpoints." },
+                new { file_data = new { mime_type = audioFile.ContentType, file_uri = fileUri } }
+                );
+
+
+                //using var response = await _httpClient.PostAsJsonAsync(endpoint, requestBody);
+
+                HttpResponseMessage? httpPesponse = null;
+                for(int attempt = 1; attempt <= 3; attempt++)
+                {
+                    httpPesponse = await _httpClient.PostAsJsonAsync(endpoint, requestBody);
+
+                    if (httpPesponse.StatusCode != System.Net.HttpStatusCode.ServiceUnavailable)
+                    {
+                        break;
+                    }
+                    if(attempt < 3 )
+                    {
+                        await Task.Delay(attempt * 2500);
+                    }
+                }
+                return await GetResponse(httpPesponse);
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    var deleteUrl = $"https://generativelanguage.googleapis.com/v1beta/{fileName}?key={_apiKey}";
+                    await _httpClient.DeleteAsync(deleteUrl);
+                }
+            }
         }
 
         public async Task<string> CreateMeetingAgenda(string topic, string duration, string attendees)
